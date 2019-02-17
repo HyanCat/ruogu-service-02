@@ -1,0 +1,12 @@
+{
+    "name": "web-icon",
+    "author": {
+        "email": "hyancat.cn@gmail.com",
+        "name": "HyanCat"
+    },
+    "dependencies": {
+        "jsdom": "^13.2.0",
+        "koa": "^2.7.0"
+    },
+    "license": "MIT"
+}
