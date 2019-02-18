@@ -5,7 +5,8 @@
         "name": "HyanCat"
     },
     "dependencies": {
-        "jsdom": "^13.2.0",
+        "axios": "^0.18.0",
+        "cheerio": "^1.0.0-rc.2",
         "koa": "^2.7.0"
     },
     "license": "MIT"

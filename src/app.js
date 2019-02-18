@@ -12,7 +12,7 @@ app.use(async ctx => {
                 }
             }).catch(e => {
                 ctx.body = {
-                    error: '获取失败'
+                    error: e.message
                 }
             })
     } else {

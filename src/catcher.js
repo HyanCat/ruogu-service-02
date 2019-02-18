@@ -1,61 +1,54 @@
-const jsdom = require('jsdom')
-const {
-    JSDOM
-} = jsdom
+const cheerio = require('cheerio')
+const axios = require('axios')
 
-class NoneError extends Error {
-
+function parseHtml(html, url) {
+    const $ = cheerio.load(html)
+    const title = $('title').text().trim()
+    let icon = undefined
+    if (icon == undefined) {
+        let meta = $('meta[name="og:image"]')
+        icon = meta.attr('content')
+    }
+    if (icon == undefined) {
+        let link = $('link[rel="apple-touch-icon-precomposed"]')
+        icon = link.attr('href')
+    }
+    if (icon == undefined) {
+        let link = $('link[rel="shortcut icon"]')
+        icon = link.attr('href')
+    }
+    if (typeof (url) == 'string') {
+        url = new URL(url)
+    }
+    if (icon) {
+        if (icon.startsWith('//')) {
+            icon = `${url.protocol}${icon}`
+        } else if (icon.startsWith('/')) {
+            icon = `${url.protocol}/${icon}`
+        } else if (!icon.startsWith('http')) {
+            icon = `${url.protocol}//${icon}`
+        }
+    }
+    let description = $('meta[name="description"]').attr('content')
+    description = description ? description.trim() : null
+    return {
+        icon,
+        title,
+        description,
+    }
 }
 
 class Catcher {
     async catchIcon(url) {
         return new Promise((resolve, reject) => {
-            JSDOM.fromURL(url, {
-                referrer: url,
-                userAgent: 'Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Mobile Safari/537.36'
-            }).then(dom => {
-                let icon = null
-                const document = dom.window.document
-                const metas = document.getElementsByTagName('meta')
-                for (let i = 0; i < metas.length; i++) {
-                    const element = metas[i];
-                    const name = element.name
-                    const content = element.content
-                    if (name == 'og:image') {
-                        icon = content
-                        break
-                    }
-                }
-                if (icon == null) {
-                    const links = document.getElementsByTagName('link')
-                    for (let i = 0; i < links.length; i++) {
-                        const element = links[i];
-                        const rel = element.rel
-                        if (rel == 'apple-touch-icon-precomposed') {
-                            icon = element.href
-                            break
-                        }
-                    }
-                }
-                if (icon == null) {
-                    const links = document.getElementsByTagName('link')
-                    for (let i = 0; i < links.length; i++) {
-                        const element = links[i];
-                        const rel = element.rel
-                        if (rel == 'icon' || rel == 'shortcut icon') {
-                            icon = element.href
-                            break
-                        }
-                    }
-                }
-                if (icon && icon.length) {
-                    resolve(icon)
-                } else {
-                    reject(NoneError())
-                }
+            axios.get(url).then(r => {
+                const html = r.data
+                const result = parseHtml(html, url)
+                resolve(result)
             }).catch(e => {
                 reject(e)
             })
+            return
         })
     }
 }
