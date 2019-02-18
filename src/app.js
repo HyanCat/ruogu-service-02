@@ -6,10 +6,8 @@ app.use(async ctx => {
     const url = ctx.query.webpage
     if (url) {
         await new Catcher().catchIcon(url)
-            .then(icon => {
-                ctx.body = {
-                    icon
-                }
+            .then(result => {
+                ctx.body = result
             }).catch(e => {
                 ctx.body = {
                     error: e.message
